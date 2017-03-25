@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -59,6 +60,19 @@ public class GTFSImporLogic {
             Trip.class
     };
 
+    @PostConstruct
+    private void init(){
+        putRepo(Agency.class, agencyRepository);
+        putRepo(CalendarDate.class, calendarDateRepository);
+        putRepo(FeedInfo.class, feedInfoRepository);
+        putRepo(Pathway.class, pathwayRepository);
+        putRepo(Route.class, routeRepository);
+        putRepo(Shape.class, shapeRepository);
+        putRepo(Stop.class, stopRepository);
+        putRepo(StopTime.class, stopTimeRepository);
+        putRepo(Trip.class, tripRepository);
+    }
+
     public Class<?> getClassByFileName(String fileName) {
         for(Class<?> objectType: objectTypes) {
             String name = objectType.getAnnotation(GtfsFile.class).value();
@@ -72,7 +86,6 @@ public class GTFSImporLogic {
 
 
     public void process(String gtfsPath) {
-        init();
         try {
             ZipFile zipFile = new ZipFile(gtfsPath);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -89,7 +102,7 @@ public class GTFSImporLogic {
                 }
             }
         } catch (IOException e) {
-            log.error("Cannot read file: " + gtfsPath, e);
+            log.error("Can't read file: " + gtfsPath, e);
             return;
         }
 
@@ -123,18 +136,6 @@ public class GTFSImporLogic {
             jpaRepository.save(entity);
         }
 
-    }
-
-    private void init(){
-        putRepo(Agency.class, agencyRepository);
-        putRepo(CalendarDate.class, calendarDateRepository);
-        putRepo(FeedInfo.class, feedInfoRepository);
-        putRepo(Pathway.class, pathwayRepository);
-        putRepo(Route.class, routeRepository);
-        putRepo(Shape.class, shapeRepository);
-        putRepo(Stop.class, stopRepository);
-        putRepo(StopTime.class, stopTimeRepository);
-        putRepo(Trip.class, tripRepository);
     }
 
     public <T> void putRepo(Class<T> clazz, JpaRepository<T, ?> jpaRepository) {
